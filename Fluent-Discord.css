@@ -1,7 +1,7 @@
 /**
  * @name Fluent Discord
- * @author TakosThings & Claude
- * @version 1.14.0
+ * @author TakosThings
+ * @version 1.13.5
  * @description Fluent theme for Discord (⏹ Static)
  * @source https://github.com/TakosThings/Fluent-Discord
 */
@@ -30,8 +30,11 @@
   --fluent-acrylic-background-saturate: 150%;
   --fluent-show-nitro-decorations: none;
 
-  /* Image preview size (for the people who don't use 100% scaling) 1.0 = default, 1.25 = 25% bigger, 1.5 = 50% bigger, etc.*/
-  --fluent-image-modal-scale: 1.5;
+  /* Image preview (clicking an image in chat) - for non-100% scaling
+     Multiplier for small previews: 1 = off, 1.5 = 50% bigger, max effective 2.
+     Only images that are small compared to the window are enlarged, and never beyond ~90% of the window,
+     so images that already fill the window stay exactly as they are. */
+  --fluent-image-modal-scale: 2;
 }
 
 /**
@@ -8745,10 +8748,28 @@ html[lang^=en-].theme-dark .toolbar__9293f .iconWrapper__9293f[aria-label="Keywo
   outline-offset: 2px;
 }
 
-/* Image preview size (see top of file).
-   Real structure: .carouselModal > .mediaArea > ... > .imageWrapper (inline width/height in px, clips the image).
-   zoom on the wrapper scales its layout size, its clipping and the image together, keeping the aspect ratio.
+/* Image preview multiplier (see top of file).
+   Does not touch any layout size: the wrapper (inline px size) becomes a size container, and only the
+   visual scale of its content changes, depending on how big the wrapper is compared to the window.
+   The tiers keep (wrapper size x scale) below ~90% of the window.
    Scoped to the modal, because chat attachments also use .imageWrapper. */
 [class*="carouselModal"] [class*="mediaArea"] [class*="imageWrapper"] {
-  zoom: var(--fluent-image-modal-scale);
+  container-type: size;
+  overflow: visible !important;
+}
+@container (width <= 75vw) and (height <= 75vh) {
+  [class*="carouselModal"] [class*="mediaArea"] [class*="imageWrapper"] > * {
+    scale: min(var(--fluent-image-modal-scale), 1.2);
+    transform-origin: center center;
+  }
+}
+@container (width <= 60vw) and (height <= 60vh) {
+  [class*="carouselModal"] [class*="mediaArea"] [class*="imageWrapper"] > * {
+    scale: min(var(--fluent-image-modal-scale), 1.5);
+  }
+}
+@container (width <= 45vw) and (height <= 45vh) {
+  [class*="carouselModal"] [class*="mediaArea"] [class*="imageWrapper"] > * {
+    scale: min(var(--fluent-image-modal-scale), 2);
+  }
 }
